@@ -23,7 +23,13 @@
       .tb:hover { border-color: rgba(232, 162, 78, 0.7); box-shadow: 0 0 16px rgba(232, 150, 60, 0.2); transform: translateY(-1px); }
       #chip img { height: 16px; }
       #buyBtn { color: #ffe1a6; background: linear-gradient(rgba(120,60,20,.6), rgba(70,36,14,.6)); }
-      #menuBtn { width: 40px; padding: 0; justify-content: center; font-size: 16px; }
+      #menuBtn { width: 40px; padding: 0; justify-content: center; font-size: 16px; position: relative; }
+      .ef-badge { position: absolute; min-width: 16px; height: 16px; box-sizing: border-box; padding: 0 4px;
+        border-radius: 8px; background: #c0392b; color: #fff; font-family: 'Cinzel', serif; font-size: 10px;
+        line-height: 16px; text-align: center; box-shadow: 0 0 8px rgba(192,57,43,.55); pointer-events: none; }
+      #menuBtn .ef-badge { top: -5px; right: -5px; }
+      .menu-item { position: relative; }
+      .menu-item .ef-badge { top: 50%; right: 12px; transform: translateY(-50%); }
       #menuBtn .bars { width: 16px; height: 11px; position: relative; }
       #menuBtn .bars i { position: absolute; left: 0; right: 0; height: 1.6px; background: #f2d9a6; border-radius: 2px; }
       #menuBtn .bars i:nth-child(1){ top: 0 } #menuBtn .bars i:nth-child(2){ top: 4.7px } #menuBtn .bars i:nth-child(3){ top: 9.4px }
@@ -85,7 +91,7 @@
       @keyframes k-fade { to { opacity: .85; } }
       @keyframes k-dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
     </style>
-    <script type="module" crossorigin src="/assets/index-CxEZnEtJ.js"></script>
+    <script type="module" crossorigin src="/assets/index-oCU9sOu4.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-D3ajCbv_.css">
   </head>
   <body>
