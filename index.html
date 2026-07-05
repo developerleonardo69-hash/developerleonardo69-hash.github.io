@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emberfell — the Keeper's Study</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0c0f13; }
+      canvas { display: block; }
+      #ui {
+        position: fixed; inset: 0; pointer-events: none;
+        font-family: Georgia, 'Times New Roman', serif; color: #e8dcc8;
+      }
+      #logo { position: absolute; top: 22px; left: 26px; height: 44px; opacity: 0.95; }
+      #chip {
+        position: absolute; top: 24px; right: 26px; pointer-events: auto;
+        display: flex; align-items: center; gap: 8px; font-size: 13px;
+        background: rgba(20, 16, 12, 0.55); backdrop-filter: blur(8px);
+        border: 1px solid rgba(232, 220, 200, 0.22); border-radius: 999px;
+        padding: 8px 16px; cursor: pointer;
+      }
+      #chip img { height: 18px; }
+      #hint {
+        position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+        font-size: 12px; opacity: 0.55; letter-spacing: 0.06em;
+      }
+      #loading {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font-size: 15px; letter-spacing: 0.24em; color: #c9b490;
+        background: #0c0f13; transition: opacity 0.9s;
+      }
+      #loading.done { opacity: 0; pointer-events: none; }
+    </style>
+    <script type="module" crossorigin src="/assets/index-DWezLOZ3.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D3ajCbv_.css">
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <div id="ui">
+      <img id="logo" src="/brand/logo_emberfell.png" alt="Emberfell" />
+      <div id="chip"><img src="/brand/token_ember_icon.png" alt="" />$EMBER · connect</div>
+      <div id="hint">scene check · move the mouse · O — free orbit</div>
+      <div id="loading">kindling the hearth…</div>
+    </div>
+  </body>
+</html>
