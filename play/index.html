@@ -209,6 +209,41 @@
       #tintGroup .tclear { font-size: 11px; border: 0; background: none; cursor: pointer; color: #7a6a55; }
       #tintGroup .troyal { box-shadow: 0 0 0 1.5px rgba(216, 181, 69, 0.75); }
       #tintGroup .troyal.tlocked { opacity: 0.45; filter: saturate(0.6); }
+
+      /* the building menu — grouped, labelled sections (Tiny Glade style) */
+      #bldpanel {
+        position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%);
+        display: none; align-items: stretch; gap: 0; flex-wrap: wrap; justify-content: center;
+        background: linear-gradient(#fbf6ea, #f2e8cd);
+        border: 1.5px solid #cabf9f; border-radius: 18px;
+        box-shadow: 0 8px 28px rgba(60, 50, 25, 0.2), inset 0 1px 0 #fffdf4;
+        padding: 12px 6px; color: #4a5348; z-index: 6; max-width: min(95vw, 900px);
+        animation: bpin 0.18s cubic-bezier(0.2, 1.3, 0.5, 1);
+      }
+      @keyframes bpin { from { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+      #bldpanel.show { display: flex; }
+      .bpsec { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 15px; }
+      .bpsec + .bpsec { border-left: 1px solid rgba(74, 59, 42, 0.13); }
+      .bphead { flex-direction: row; gap: 9px; padding-right: 4px; }
+      .bplabel { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #978c72; font-weight: 700; }
+      .bprow { display: flex; gap: 7px; align-items: center; }
+      .bpcap { font-size: 10.5px; color: #6a6250; font-weight: 600; min-height: 13px; }
+      .bpsw {
+        width: 32px; height: 32px; border-radius: 9px; border: 1.6px solid rgba(74, 59, 42, 0.2);
+        cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+        background-size: cover; transition: transform 0.12s, box-shadow 0.12s;
+      }
+      .bpsw:hover { transform: translateY(-2px); }
+      .bpsw:focus-visible { outline: 2px solid #b5713f; outline-offset: 2px; }
+      .bpsw.on { border-color: #b5713f; box-shadow: 0 0 0 2px rgba(181, 113, 63, 0.45); }
+      .bpsw svg { width: 20px; height: 20px; display: block; }
+      .bptype { font-family: 'Georgia', serif; font-size: 14px; font-weight: 600; color: #3a4a3f; align-self: center; }
+      .bptrash {
+        width: 30px; height: 30px; border-radius: 9px; border: 1.5px solid rgba(74, 59, 42, 0.2);
+        background: #f6ecd6; cursor: pointer; font-size: 14px; align-self: center; transition: background 0.12s, border-color 0.12s;
+      }
+      .bptrash:hover { background: #e8b3a0; border-color: #c96f45; }
+      #bldpanel input[type="range"] { width: 116px; accent-color: #b5713f; }
       #gildBtn.active { background: rgba(216, 181, 69, 0.25); border-color: rgba(216, 181, 69, 0.7); }
 
       #tray {
@@ -397,7 +432,7 @@
       }
       #loading.done { opacity: 0; pointer-events: none; }
     </style>
-    <script type="module" crossorigin src="./assets/index-Brcrw4vP.js"></script>
+    <script type="module" crossorigin src="./assets/index-DW2oSv6P.js"></script>
   </head>
   <body>
     <canvas id="scene"></canvas>
@@ -438,6 +473,7 @@
           </span>
           <span id="tintGroup" style="display:none;align-items:center;gap:5px"></span>
         </div>
+        <div id="bldpanel"></div>
         <div id="tray" class="panel"></div>
         <div id="bar">
           <button class="gtile active" style="--tile:#8f9c85" data-tool="orbit" data-tip="move · select (1)">
