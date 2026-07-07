@@ -56,6 +56,33 @@
         padding: 6px 12px; font: inherit; font-size: 12px; color: #4a3b2a; cursor: pointer; text-align: left;
       }
 
+      /* ---- the painterly pause menu ------------------------------------ */
+      #pausemenu {
+        position: fixed; inset: 0; z-index: 60; display: none;
+        align-items: center; padding-left: 11vw;
+        backdrop-filter: blur(17px) saturate(1.28) brightness(1.04);
+        background:
+          radial-gradient(120% 90% at 22% 30%, rgba(246, 236, 214, 0.10), transparent 55%),
+          radial-gradient(90% 110% at 78% 74%, rgba(94, 110, 84, 0.14), transparent 60%),
+          radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(46, 36, 20, 0.34) 100%);
+        animation: pmIn 0.35s ease-out;
+      }
+      #pausemenu.open { display: flex; }
+      @keyframes pmIn { from { opacity: 0; backdrop-filter: blur(2px); } to { opacity: 1; } }
+      .pm-inner { display: flex; flex-direction: column; gap: 14px; }
+      .pm-logo {
+        font-size: 66px; font-style: italic; color: #fbf3df; letter-spacing: 0.02em;
+        text-shadow: 0 3px 14px rgba(40, 30, 14, 0.55); margin-bottom: 26px; line-height: 1;
+      }
+      .pm-flourish { display: block; width: 220px; margin: 10px 0 0 6px; opacity: 0.85; }
+      .pm-item {
+        align-self: flex-start; cursor: pointer; border: 0; background: none; padding: 4px 0;
+        font-family: Georgia, serif; font-size: 26px; letter-spacing: 0.16em; text-transform: uppercase;
+        color: #f4ead2; text-shadow: 0 2px 10px rgba(40, 30, 14, 0.5);
+        transition: transform 0.15s ease, color 0.15s ease;
+      }
+      .pm-item:hover { transform: translateX(10px); color: #ffe9b0; }
+
       /* clean-shot mode (H) — the world, nothing else */
       body.hide-ui #ui, body.hide-ui #chat, body.hide-ui #hints { display: none !important; }
 
@@ -288,8 +315,10 @@
       .mp-foot .msell #sName { width: 110px; }
       .swatch {
         cursor: pointer; font: inherit; position: relative; width: 78px; padding: 8px 6px 7px;
-        border: 1.5px solid rgba(74, 59, 42, 0.16); border-radius: 10px;
-        background: rgba(255, 255, 255, 0.35); display: flex; flex-direction: column; align-items: center; gap: 6px;
+        border: 2px solid rgba(71, 85, 75, 0.55); border-radius: 11px;
+        background: linear-gradient(165deg, rgba(255, 252, 240, 0.75), rgba(240, 228, 200, 0.55));
+        box-shadow: inset 0 1px 0 rgba(255, 250, 235, 0.6), 0 3px 8px rgba(46, 38, 24, 0.14);
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
       }
       .swatch .chip { width: 100%; height: 30px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
       .swatch .name { font-size: 12px; color: #4a3b2a; }
@@ -306,15 +335,49 @@
       .tsliders label { display: flex; align-items: center; gap: 9px; font-size: 11px; color: #6a5a44; white-space: nowrap; }
       .tsliders input { flex: 1; accent-color: #b5713f; }
 
-      #bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 12px; }
-      #bar button {
-        cursor: pointer; font: inherit; font-size: 12px; color: #4a3b2a;
-        background: transparent; border: 1px solid transparent; border-radius: 9px; padding: 6px 11px;
+      /* ---- the hand-painted tile bar (no panel — tiles float over the world) */
+      #bar { display: flex; align-items: flex-end; gap: 9px; padding: 4px 2px 12px; }
+      #bar .cats { display: flex; gap: 9px; margin-left: 8px; }
+      .gtile {
+        position: relative; width: 54px; height: 54px; flex: none; cursor: pointer;
+        background:
+          linear-gradient(160deg, rgba(255, 252, 240, 0.28) 0%, rgba(255, 252, 240, 0.06) 42%, rgba(40, 32, 20, 0.14) 100%),
+          var(--tile, #b98a5c);
+        border: 2.5px solid #47554b; border-radius: 13px; padding: 6px;
+        box-shadow:
+          inset 0 1.5px 0 rgba(255, 250, 235, 0.35),
+          inset 0 -3px 6px rgba(40, 32, 18, 0.22),
+          0 5px 12px rgba(46, 38, 24, 0.35);
+        transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.16s ease, box-shadow 0.16s ease;
       }
-      #bar button.active { background: rgba(181, 113, 63, 0.2); border-color: rgba(181, 113, 63, 0.5); }
-      #bar button:disabled { opacity: 0.35; cursor: default; }
-      #bar .sep { width: 1px; height: 20px; background: rgba(74, 59, 42, 0.2); margin: 0 3px; }
-      #bar .cats button.active { background: rgba(120, 150, 100, 0.22); border-color: rgba(120, 150, 100, 0.55); }
+      .gtile svg { width: 100%; height: 100%; display: block; }
+      .gtile::before {
+        /* stitched thread loops, like a page sewn into a journal */
+        content: ''; position: absolute; inset: -2.5px; pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 54 54'%3E%3Cg fill='none' stroke='%23f6ecd6' stroke-opacity='.5' stroke-width='1.7' stroke-linecap='round'%3E%3Cpath d='M4 13 q-4.5 -5 1.5 -7.5 q5 -2 4 2.5'/%3E%3Cpath d='M49 39 q5 4 -0.5 7 q-4.5 2.5 -4.5 -1.5'/%3E%3C/g%3E%3C/svg%3E");
+        background-size: 100% 100%;
+      }
+      .gtile:hover { transform: translateY(-4px) scale(1.05); filter: brightness(1.07); }
+      .gtile:active { transform: translateY(-1px) scale(0.97); }
+      .gtile.active {
+        transform: translateY(-7px) scale(1.06);
+        filter: brightness(1.1) saturate(1.08);
+        box-shadow:
+          inset 0 1.5px 0 rgba(255, 250, 235, 0.45),
+          inset 0 -3px 6px rgba(40, 32, 18, 0.18),
+          0 10px 18px rgba(46, 38, 24, 0.4);
+      }
+      .gtile.active::after {
+        content: ''; position: absolute; left: 50%; bottom: -13px; transform: translateX(-50%);
+        width: 16px; height: 4.5px; border-radius: 3px; background: #3a4540;
+      }
+      .gminis { display: flex; flex-direction: column; gap: 4px; margin: 0 2px; align-self: center; }
+      .gmini {
+        width: 27px; height: 27px; cursor: pointer; font-size: 12px; line-height: 1; color: #4a3b2a;
+        background: rgba(250, 244, 230, 0.88); border: 1.5px solid rgba(71, 85, 75, 0.55);
+        border-radius: 50%; padding: 0; box-shadow: 0 2px 6px rgba(46, 38, 24, 0.25);
+      }
+      .gmini:disabled { opacity: 0.35; cursor: default; }
 
       #loading {
         position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px;
@@ -334,7 +397,7 @@
       }
       #loading.done { opacity: 0; pointer-events: none; }
     </style>
-    <script type="module" crossorigin src="./assets/index-CbQzb6ic.js"></script>
+    <script type="module" crossorigin src="./assets/index-BLKsi8rI.js"></script>
   </head>
   <body>
     <canvas id="scene"></canvas>
@@ -361,6 +424,7 @@
         <button id="muteBtn" data-tip="sound on/off">🔊</button>
         <button id="plotBtn" data-tip="claim the land where you stand">🏡</button>
         <button id="settingsBtn" data-tip="settings">⚙</button>
+        <button id="pauseBtn" data-tip="menu (esc)">☰</button>
         <button id="authBtn" title="sign in with your Solana wallet">⬡ sign in</button>
       </div>
 
@@ -375,23 +439,43 @@
           <span id="tintGroup" style="display:none;align-items:center;gap:5px"></span>
         </div>
         <div id="tray" class="panel"></div>
-        <div id="bar" class="panel">
-          <button data-tool="orbit" class="active" data-tip="move · select (1)">✦ move</button>
-          <button data-tool="erase" data-tip="erase walls (3)">erase</button>
-          <button data-tool="arch" data-tip="arch doorway (4)">arch</button>
-          <div class="sep"></div>
-          <button id="undoBtn" disabled data-tip="undo (⌘Z)">↶</button>
-          <button id="redoBtn" disabled data-tip="redo (⌘⇧Z)">↷</button>
-          <button id="deleteBtn" disabled data-tip="remove selected (⌫)">🗑</button>
-          <div class="sep"></div>
-          <span class="cats" style="display:flex;gap:4px">
-            <button data-cat="terrain">Terrain</button>
-            <button data-cat="walls" class="active">Walls</button>
-            <button data-cat="paths">Paths</button>
-            <button data-cat="fields">Fields</button>
-            <button data-cat="buildings">Buildings</button>
-            <button data-cat="nature">Nature</button>
-            <button data-cat="props">Props</button>
+        <div id="bar">
+          <button class="gtile active" style="--tile:#8f9c85" data-tool="orbit" data-tip="move · select (1)">
+            <svg viewBox="0 0 40 40"><path d="M20 6 C21.5 13.5 23 15.6 31 19.6 C23 22.2 21.5 24.6 20 33 C18.5 24.6 17 22.2 9 19.6 C17 15.6 18.5 13.5 20 6 Z" fill="rgba(246,236,214,.4)" stroke="#f6ecd6" stroke-width="2.2" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="gtile" style="--tile:#cf8e68" data-tool="erase" data-tip="erase walls (3)">
+            <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="15" y="7" width="15" height="10.5" rx="2.6" transform="rotate(24 22 12)" fill="rgba(246,236,214,.3)"/><path d="M9 27 q7 -2.5 14 0"/><path d="M7 32.5 q9 -3 17.5 0"/></g></svg>
+          </button>
+          <button class="gtile" style="--tile:#c1a262" data-tool="arch" data-tip="arch doorway (4)">
+            <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M11.5 32 V20.5 Q11.5 11.5 20 11.5 Q28.5 11.5 28.5 20.5 V32" fill="rgba(246,236,214,.18)"/><path d="M7 33 q13 -2.2 26 0"/></g></svg>
+          </button>
+          <span class="gminis">
+            <button class="gmini" id="undoBtn" disabled data-tip="undo (⌘Z)">↶</button>
+            <button class="gmini" id="redoBtn" disabled data-tip="redo (⌘⇧Z)">↷</button>
+            <button class="gmini" id="deleteBtn" disabled data-tip="remove selected (⌫)">🗑</button>
+          </span>
+          <span class="cats">
+            <button class="gtile" style="--tile:#d6c193" data-cat="terrain" data-tip="terrain — sculpt &amp; paint">
+              <svg viewBox="0 0 40 40"><g stroke="#4a584d" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 31 q5.5 -9 11 -3.5 q4.5 -10.5 17 3.5" fill="rgba(74,88,77,.15)"/><path d="M20 17 V7.5"/><path d="M15.5 12.2 L20 7 l4.5 5.2"/></g></svg>
+            </button>
+            <button class="gtile active" style="--tile:#b98a5c" data-cat="walls" data-tip="walls">
+              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.1" fill="none" stroke-linecap="round" transform="rotate(-2 20 20)"><path d="M8.5 27.5 q11.5 1 23 0 M8 20.5 q12 -1 24 0 M8.5 13.5 q11.5 1 23 0"/><path d="M8.5 13.5 v14 M31.5 13.5 v14 M16 14 v6.5 M24 13.2 v7.3 M12 21 v6.5 M20 20.4 v7.1 M28 20.8 v6.7"/></g></svg>
+            </button>
+            <button class="gtile" style="--tile:#c97a54" data-cat="paths" data-tip="paths">
+              <svg viewBox="0 0 40 40"><path d="M11.5 33 C 20 28, 10.5 20, 19 15 C 25 11.5, 27 10, 30 6.5" fill="none" stroke="#f6ecd6" stroke-width="2.7" stroke-linecap="round" stroke-dasharray="6 4.6"/></svg>
+            </button>
+            <button class="gtile" style="--tile:#a8a457" data-cat="fields" data-tip="fields — meadow &amp; wheat">
+              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.1" fill="rgba(246,236,214,.3)" stroke-linecap="round" stroke-linejoin="round"><path d="M20 33.5 Q19.4 22 20 11" fill="none"/><path d="M20 15 q-6.2 -2 -7.2 -8.2 q6.2 1.2 7.2 8.2 Z"/><path d="M20 15 q6.2 -2 7.2 -8.2 q-6.2 1.2 -7.2 8.2 Z"/><path d="M20 22.5 q-5.6 -1.6 -7 -7.2 q6 1.1 7 7.2 Z"/><path d="M20 22.5 q5.6 -1.6 7 -7.2 q-6 1.1 -7 7.2 Z"/></g></svg>
+            </button>
+            <button class="gtile" style="--tile:#c96f45" data-cat="buildings" data-tip="buildings">
+              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.2" fill="rgba(246,236,214,.24)" stroke-linejoin="round" stroke-linecap="round"><path d="M8 32.5 V22 l6 -4.2 6 4.2 V32.5 Z"/><path d="M20 32.5 V15 l5.2 -7.5 5.2 7.5 V32.5"/><path d="M5.5 33 q14.5 1.4 29 0" fill="none"/><circle cx="25.2" cy="19" r="1.7" fill="#f6ecd6" stroke="none"/></g></svg>
+            </button>
+            <button class="gtile" style="--tile:#7d9c5a" data-cat="nature" data-tip="nature — trees &amp; bushes">
+              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 33.5 v-7" fill="none"/><path d="M20 27 C 11.5 27 8.2 21 12.2 16.2 C 9.4 10.5 15.8 5.4 20 7.2 C 25.8 4.4 31.6 10 28 15.4 C 32.6 20.4 28 27 20 27 Z" fill="rgba(246,236,214,.28)"/></g></svg>
+            </button>
+            <button class="gtile" style="--tile:#6f8a94" data-cat="props" data-tip="props &amp; trinkets">
+              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.2" fill="none" stroke-linecap="round"><circle cx="20" cy="20" r="12.6"/><circle cx="20" cy="20" r="2.7" fill="rgba(246,236,214,.55)"/><path d="M20 7.4 v25.2 M7.4 20 h25.2 M11.1 11.1 l17.8 17.8 M28.9 11.1 L11.1 28.9"/></g></svg>
+            </button>
           </span>
         </div>
       </div>
@@ -400,5 +484,17 @@
     </div>
     <div id="vignette"></div>
     <div id="hints">drag to build · double-click to look · R rotates · WASD walks · Enter chats</div>
+    <div id="pausemenu">
+      <div class="pm-inner">
+        <div class="pm-logo">Emberfell
+          <svg viewBox="0 0 180 22" class="pm-flourish"><g fill="none" stroke="#f6ecd6" stroke-width="1.8" stroke-linecap="round"><path d="M6 12 q60 -9 168 -2"/><path d="M26 12 q-4 -7 3 -8 q5 -1 3 4"/><path d="M148 9 q5 -6 9 -1 q3 4 -3 5"/></g></svg>
+        </div>
+        <button class="pm-item" data-pm="continue">Continue</button>
+        <button class="pm-item" data-pm="market">Market</button>
+        <button class="pm-item" data-pm="postcard">Postcard</button>
+        <button class="pm-item" data-pm="settings">Settings</button>
+        <button class="pm-item" data-pm="exit">Leave the Glade</button>
+      </div>
+    </div>
   </body>
 </html>
