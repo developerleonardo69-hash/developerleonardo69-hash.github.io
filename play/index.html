@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emberfell — style check</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #f6e8c9; }
+      canvas { display: block; }
+      #ui {
+        position: fixed; inset: 0; pointer-events: none;
+        font-family: Georgia, 'Times New Roman', serif; color: #4a3b2a;
+      }
+      .panel {
+        background: rgba(255, 250, 238, 0.78); backdrop-filter: blur(14px) saturate(1.15);
+        border: 1px solid rgba(74, 59, 42, 0.14); border-radius: 16px;
+        box-shadow: 0 10px 32px rgba(58, 42, 22, 0.14), 0 1.5px 0 rgba(255, 255, 255, 0.55) inset;
+      }
+
+      /* --- juice: every control breathes ------------------------------- */
+      button {
+        transition: transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease, background 0.14s ease;
+      }
+      button:hover { transform: translateY(-1.5px) scale(1.05); }
+      button:active { transform: translateY(0) scale(0.93); transition-duration: 0.06s; }
+      .swatch:hover { box-shadow: 0 6px 16px rgba(58, 42, 22, 0.16); }
+      .swatch.active { box-shadow: 0 0 0 2px rgba(181, 113, 63, 0.55), 0 6px 14px rgba(181, 113, 63, 0.18); }
+      #tray > * { animation: trayIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+      #tray > *:nth-child(2) { animation-delay: 0.025s; }
+      #tray > *:nth-child(3) { animation-delay: 0.05s; }
+      #tray > *:nth-child(4) { animation-delay: 0.075s; }
+      #tray > *:nth-child(5) { animation-delay: 0.1s; }
+      #tray > *:nth-child(6) { animation-delay: 0.125s; }
+      @keyframes trayIn { from { opacity: 0; transform: translateY(7px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+      /* soft storybook vignette over the frame (never over the UI) */
+      #vignette {
+        position: fixed; inset: 0; pointer-events: none; z-index: 5;
+        background: radial-gradient(ellipse 108% 96% at 50% 42%, transparent 62%, rgba(46, 32, 16, 0.17) 100%);
+      }
+
+      /* quiet hint line, bottom-right */
+      #hints {
+        position: fixed; right: 16px; bottom: 12px; z-index: 6; pointer-events: none;
+        font-size: 11px; font-style: italic; color: rgba(74, 59, 42, 0.52);
+        text-shadow: 0 1px 0 rgba(255, 250, 238, 0.5);
+      }
+
+      /* keeper list popover (click the ● badge) */
+      #keeperlist {
+        position: fixed; top: 64px; right: 18px; z-index: 45; pointer-events: auto;
+        display: flex; flex-direction: column; gap: 4px; padding: 8px;
+      }
+      #keeperlist button {
+        border: 0; background: rgba(255, 255, 255, 0.4); border-radius: 8px;
+        padding: 6px 12px; font: inherit; font-size: 12px; color: #4a3b2a; cursor: pointer; text-align: left;
+      }
+
+      /* clean-shot mode (H) — the world, nothing else */
+      body.hide-ui #ui, body.hide-ui #chat, body.hide-ui #hints { display: none !important; }
+
+      /* quests popover (✨ chip) */
+      #questpanel {
+        position: fixed; top: 64px; right: 18px; z-index: 45; pointer-events: auto;
+        display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; font-size: 12px; min-width: 230px;
+      }
+      #questpanel .qp-title { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #8a7a63; }
+      #questpanel .qp-tier { font-size: 11px; font-style: italic; color: #b5713f; margin-bottom: 2px; }
+      #questpanel .qp-row { display: flex; justify-content: space-between; gap: 12px; }
+      #questpanel .qp-row span { opacity: 0.7; }
+      #questpanel .qp-row.qdone { opacity: 0.5; text-decoration: line-through; }
+      #questpanel .qp-market {
+        margin-top: 4px; cursor: pointer; font: inherit; font-size: 11px; color: #fff;
+        background: #b5713f; border: none; border-radius: 999px; padding: 5px 10px;
+      }
+      .mcard .mcreator { cursor: pointer; text-decoration-style: dotted; }
+
+      /* settings popover */
+      #settingspanel {
+        position: fixed; top: 64px; right: 18px; z-index: 45; pointer-events: auto;
+        display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; font-size: 12px;
+      }
+      #settingspanel label { display: flex; align-items: center; gap: 8px; }
+      #settingspanel select {
+        font: inherit; font-size: 11px; padding: 3px 6px; border-radius: 6px;
+        border: 1px solid rgba(74, 59, 42, 0.2); background: rgba(255, 255, 255, 0.55); color: #4a3b2a;
+      }
+      #settingspanel .set-note { font-size: 10px; font-style: italic; opacity: 0.6; }
+
+      /* first-visit guidance */
+      #onboard {
+        position: fixed; left: 50%; bottom: 148px; transform: translateX(-50%); z-index: 35;
+        display: flex; align-items: center; gap: 10px; pointer-events: auto;
+        background: rgba(255, 250, 238, 0.92); backdrop-filter: blur(12px);
+        border: 1px solid rgba(181, 113, 63, 0.35); border-radius: 999px;
+        padding: 9px 10px 9px 16px; font-size: 13px; font-style: italic; color: #4a3b2a;
+        box-shadow: 0 10px 30px rgba(58, 42, 22, 0.18);
+        transition: opacity 0.5s, transform 0.5s;
+      }
+      #onboard .ob-step {
+        font-size: 10px; font-style: normal; letter-spacing: 0.08em; color: #b5713f;
+        border: 1px solid rgba(181, 113, 63, 0.4); border-radius: 999px; padding: 2px 7px;
+      }
+      #onboard .ob-skip { border: 0; background: none; cursor: pointer; color: #9a8a72; font-size: 13px; padding: 2px 6px; }
+      #onboard.pop { animation: obPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      #onboard.bye { opacity: 0; transform: translateX(-50%) translateY(12px); }
+      @keyframes obPop { from { transform: translateX(-50%) scale(0.92); } to { transform: translateX(-50%) scale(1); } }
+
+      /* tooltips on icon buttons */
+      [data-tip] { position: relative; }
+      [data-tip]:hover::after {
+        content: attr(data-tip);
+        position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+        background: rgba(58, 44, 26, 0.92); color: #f6ecd9; font-size: 11px; font-style: normal;
+        padding: 4px 9px; border-radius: 8px; white-space: nowrap; pointer-events: none;
+        animation: tipIn 0.15s ease-out both; z-index: 50;
+      }
+      @keyframes tipIn { from { opacity: 0; transform: translateX(-50%) translateY(3px); } to { opacity: 1; transform: translateX(-50%); } }
+      #title {
+        position: absolute; top: 18px; left: 22px;
+        font-size: 20px; letter-spacing: 0.14em;
+      }
+      #title small { display: block; font-size: 10px; letter-spacing: 0.28em; opacity: 0.6; margin-top: 2px; }
+
+      /* top-right: season + time of day */
+      #topbar {
+        position: absolute; top: 16px; right: 18px; pointer-events: auto;
+        display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 12px;
+      }
+      #topbar .seasons { display: flex; gap: 3px; }
+      #topbar button {
+        cursor: pointer; font: inherit; font-size: 12px; color: #4a3b2a;
+        background: transparent; border: 1px solid transparent; border-radius: 999px; padding: 4px 9px;
+      }
+      #topbar button.active { background: rgba(181, 113, 63, 0.18); border-color: rgba(181, 113, 63, 0.45); }
+      #topbar input[type="range"] { width: 96px; accent-color: #b5713f; }
+      #topbar .sep { width: 1px; height: 16px; background: rgba(74, 59, 42, 0.2); }
+      #netBadge { margin-left: 10px; font-size: 12px; color: #9a8a72; white-space: nowrap; }
+      #netBadge.on { color: #5e8a52; }
+      #authBtn { white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+      #authBtn.authed { background: rgba(94, 138, 82, 0.14); border-color: rgba(94, 138, 82, 0.4); }
+
+      /* bottom-left: hearth chat + presence */
+      #chat {
+        position: fixed; left: 14px; bottom: 14px; width: 262px; z-index: 30;
+        font-size: 13px; opacity: 0.4; transition: opacity 0.25s; pointer-events: auto;
+      }
+      #chat:hover, #chat.live, #chat:focus-within { opacity: 1; }
+      #chat .log { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+      #chat .msg {
+        background: rgba(250, 244, 230, 0.88); border-radius: 8px; padding: 3px 9px;
+        color: #4a3b2a; line-height: 1.35; word-wrap: break-word;
+      }
+      #chat .msg.sys { background: rgba(250, 244, 230, 0.55); font-style: italic; color: #7a6a55; }
+      #chat .row { display: flex; gap: 4px; align-items: center; }
+      #chat .emotes { display: flex; gap: 2px; }
+      #chat .emotes button {
+        border: 0; background: rgba(250, 244, 230, 0.88); border-radius: 6px;
+        padding: 3px 5px; cursor: pointer; font-size: 14px; line-height: 1;
+      }
+      #chat input {
+        flex: 1; min-width: 0; border: 0; border-radius: 8px; padding: 6px 9px;
+        background: rgba(250, 244, 230, 0.92); color: #4a3b2a; font: inherit; font-size: 12px; outline: none;
+      }
+
+      /* bottom-center: the build menu */
+      #buildwrap {
+        position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+        pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 8px;
+        max-width: 94vw;
+      }
+      #context {
+        display: none; align-items: center; gap: 12px; padding: 7px 16px; font-size: 12px;
+      }
+      #context.show { display: flex; }
+      #context input[type="range"] { width: 130px; accent-color: #b5713f; }
+      #tintGroup .tdot {
+        width: 17px; height: 17px; border-radius: 50%; cursor: pointer;
+        border: 1.5px solid rgba(74, 59, 42, 0.25); padding: 0;
+      }
+      #tintGroup .tdot.active { border-color: #4a3b2a; box-shadow: 0 0 0 2px rgba(181, 113, 63, 0.4); }
+      #tintGroup .tclear { font-size: 11px; border: 0; background: none; cursor: pointer; color: #7a6a55; }
+      #tintGroup .troyal { box-shadow: 0 0 0 1.5px rgba(216, 181, 69, 0.75); }
+      #tintGroup .troyal.tlocked { opacity: 0.45; filter: saturate(0.6); }
+      #gildBtn.active { background: rgba(216, 181, 69, 0.25); border-color: rgba(216, 181, 69, 0.7); }
+
+      #tray {
+        display: flex; gap: 8px; padding: 8px; align-items: stretch;
+        max-width: 92vw; overflow-x: auto;
+      }
+      #tray .empty { padding: 10px 20px; font-size: 12px; opacity: 0.6; align-self: center; }
+      .chip-prop { display: grid; place-items: center; overflow: hidden; font-size: 20px; }
+      .chip-prop img { width: 100%; height: 100%; object-fit: contain; }
+
+      /* marketplace */
+      .mhead {
+        display: flex; flex-direction: column; gap: 3px; justify-content: center;
+        padding: 4px 10px 4px 4px; border-right: 1px solid rgba(74, 59, 42, 0.14);
+        font-size: 11px; color: #6a5a45; min-width: 150px; max-width: 210px;
+      }
+      .mhead .mbal { font-size: 17px; color: #4a3b2a; font-weight: 600; }
+      .mhead .mquests { display: flex; flex-direction: column; gap: 1px; }
+      .mhead .qdone { opacity: 0.55; text-decoration: line-through; }
+      .mhead .mburn { opacity: 0.65; font-style: italic; }
+      .mcard {
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+        width: 104px; flex: none; padding: 7px 6px;
+        border: 1.5px solid rgba(74, 59, 42, 0.16); border-radius: 10px;
+        background: rgba(255, 255, 255, 0.35); font-size: 11px; text-align: center;
+      }
+      .mcard img { width: 52px; height: 52px; object-fit: contain; }
+      .mcard .name { font-weight: 600; color: #4a3b2a; }
+      .mcard .by { opacity: 0.65; }
+      .mcard button {
+        cursor: pointer; font: inherit; font-size: 11px; color: #4a3b2a;
+        border: 1px solid rgba(181, 113, 63, 0.45); background: rgba(181, 113, 63, 0.14);
+        border-radius: 999px; padding: 3px 10px; margin-top: 2px;
+      }
+      .mcard button:disabled { opacity: 0.45; cursor: default; }
+      .msell {
+        display: flex; flex-direction: column; gap: 4px; justify-content: center;
+        padding: 4px 4px 4px 10px; border-left: 1px solid rgba(74, 59, 42, 0.14);
+        font-size: 11px; min-width: 150px;
+      }
+      .msell .mtitle { font-weight: 600; color: #4a3b2a; }
+      .msell input, .msell select {
+        font: inherit; font-size: 11px; padding: 3px 6px; border-radius: 6px;
+        border: 1px solid rgba(74, 59, 42, 0.2); background: rgba(255, 255, 255, 0.55); color: #4a3b2a;
+      }
+      .msell input[type="file"] { border: none; background: none; padding: 0; }
+      .msell .sprice input { width: 58px; }
+      .msell button {
+        cursor: pointer; font: inherit; font-size: 11px; color: #fff;
+        background: #b5713f; border: none; border-radius: 999px; padding: 4px 10px;
+      }
+      .msell button:disabled { opacity: 0.5; cursor: default; }
+      .msell #sMsg { min-height: 13px; font-style: italic; opacity: 0.8; }
+
+      /* the market panel — discover, search, filter, sort */
+      #market {
+        position: fixed; inset: 0; display: none; place-items: center; z-index: 40;
+        background: rgba(40, 30, 18, 0.35); backdrop-filter: blur(3px);
+      }
+      #market.open { display: grid; }
+      .mp-panel {
+        width: min(760px, 93vw); max-height: min(80vh, 660px);
+        display: flex; flex-direction: column; gap: 9px;
+        background: rgba(250, 246, 235, 0.97); border-radius: 16px; padding: 15px 17px;
+        box-shadow: 0 18px 50px rgba(40, 30, 15, 0.35); font-size: 13px; color: #4a3b2a;
+      }
+      .mp-head { display: flex; gap: 8px; align-items: center; }
+      .mp-bal { font-size: 18px; font-weight: 600; white-space: nowrap; }
+      .mp-search {
+        flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 6px 10px;
+        border-radius: 999px; border: 1px solid rgba(74, 59, 42, 0.22);
+        background: rgba(255, 255, 255, 0.6); color: #4a3b2a; outline: none;
+      }
+      .mp-sort {
+        font: inherit; font-size: 11px; padding: 5px 6px; border-radius: 8px;
+        border: 1px solid rgba(74, 59, 42, 0.2); background: rgba(255, 255, 255, 0.55); color: #4a3b2a;
+      }
+      .mp-close { border: 0; background: none; font-size: 17px; cursor: pointer; color: #7a6a55; padding: 2px 6px; }
+      .mp-cats { display: flex; gap: 6px; flex-wrap: wrap; }
+      .mp-cats button {
+        cursor: pointer; font: inherit; font-size: 11px; color: #4a3b2a;
+        background: transparent; border: 1px solid rgba(74, 59, 42, 0.2);
+        border-radius: 999px; padding: 3px 11px;
+      }
+      .mp-cats button.active { background: rgba(181, 113, 63, 0.16); border-color: rgba(181, 113, 63, 0.5); }
+      .mp-quests { display: flex; gap: 12px; font-size: 11px; color: #6a5a45; flex-wrap: wrap; }
+      .mp-quests .qdone { opacity: 0.55; text-decoration: line-through; }
+      .mp-grid {
+        flex: 1; overflow-y: auto; display: grid; gap: 8px; padding: 2px;
+        grid-template-columns: repeat(auto-fill, minmax(114px, 1fr)); align-content: start;
+      }
+      .mp-grid .mcard { width: auto; }
+      .mp-sec {
+        grid-column: 1 / -1; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+        color: #8a7a63; margin-top: 2px;
+      }
+      .mp-empty { grid-column: 1 / -1; padding: 22px; text-align: center; opacity: 0.6; font-style: italic; }
+      .mp-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .mp-burn { font-size: 11px; font-style: italic; opacity: 0.7; white-space: nowrap; }
+      .mp-foot .msell {
+        border: 0; padding: 0; min-width: 0; flex-direction: row; align-items: center; flex-wrap: wrap;
+      }
+      .mp-foot .msell .mtitle { margin-right: 2px; }
+      .mp-foot .msell #sName { width: 110px; }
+      .swatch {
+        cursor: pointer; font: inherit; position: relative; width: 78px; padding: 8px 6px 7px;
+        border: 1.5px solid rgba(74, 59, 42, 0.16); border-radius: 10px;
+        background: rgba(255, 255, 255, 0.35); display: flex; flex-direction: column; align-items: center; gap: 6px;
+      }
+      .swatch .chip { width: 100%; height: 30px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+      .swatch .name { font-size: 12px; color: #4a3b2a; }
+      .swatch.active { border-color: #b5713f; background: rgba(181, 113, 63, 0.14); }
+      .swatch.locked { opacity: 0.55; }
+      .swatch .badge {
+        position: absolute; top: 4px; right: 5px; font-size: 10px; letter-spacing: 0.02em;
+        background: rgba(74,59,42,0.75); color: #f6e8c9; border-radius: 6px; padding: 1px 5px;
+      }
+      .tsliders {
+        display: flex; flex-direction: column; gap: 6px; justify-content: center;
+        padding: 4px 12px; min-width: 168px; border-left: 1.5px solid rgba(74,59,42,0.14); margin-left: 2px;
+      }
+      .tsliders label { display: flex; align-items: center; gap: 9px; font-size: 11px; color: #6a5a44; white-space: nowrap; }
+      .tsliders input { flex: 1; accent-color: #b5713f; }
+
+      #bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 12px; }
+      #bar button {
+        cursor: pointer; font: inherit; font-size: 12px; color: #4a3b2a;
+        background: transparent; border: 1px solid transparent; border-radius: 9px; padding: 6px 11px;
+      }
+      #bar button.active { background: rgba(181, 113, 63, 0.2); border-color: rgba(181, 113, 63, 0.5); }
+      #bar button:disabled { opacity: 0.35; cursor: default; }
+      #bar .sep { width: 1px; height: 20px; background: rgba(74, 59, 42, 0.2); margin: 0 3px; }
+      #bar .cats button.active { background: rgba(120, 150, 100, 0.22); border-color: rgba(120, 150, 100, 0.55); }
+
+      #loading {
+        position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px;
+        align-items: center; justify-content: center;
+        font-size: 15px; letter-spacing: 0.2em; opacity: 0.9;
+        background: radial-gradient(ellipse at 50% 44%, #faf0d9 0%, #f0ddb5 100%);
+        transition: opacity 0.8s;
+      }
+      #loading::before {
+        content: ''; width: 14px; height: 14px; border-radius: 50%;
+        background: #e8963f; box-shadow: 0 0 22px 6px rgba(232, 150, 63, 0.55);
+        animation: emberPulse 1.6s ease-in-out infinite;
+      }
+      @keyframes emberPulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 22px 6px rgba(232, 150, 63, 0.55); }
+        50% { transform: scale(1.35); box-shadow: 0 0 34px 12px rgba(232, 150, 63, 0.75); }
+      }
+      #loading.done { opacity: 0; pointer-events: none; }
+    </style>
+    <script type="module" crossorigin src="./assets/index-CbQzb6ic.js"></script>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <div id="ui">
+      <div id="title">EMBERFELL<small>PHASE 0 · BUILD</small></div>
+
+      <div id="topbar" class="panel">
+        <span>☀</span>
+        <input id="time" type="range" min="0" max="1" step="0.01" value="0.45" />
+        <button id="flowBtn" data-tip="let time flow">⏵</button>
+        <button id="gildBtn" data-tip="the Gilded Hour — a Lord's sky">👑</button>
+        <div class="sep"></div>
+        <div class="seasons">
+          <button data-season="spring" class="active">spring</button>
+          <button data-season="summer">summer</button>
+          <button data-season="fall">fall</button>
+          <button data-season="winter">winter</button>
+        </div>
+        <div class="sep"></div>
+        <button id="balanceChip" data-tip="glimmers · daily quests">✨ –</button>
+        <button id="marketBtn" data-tip="the keeper market">🛍</button>
+        <button id="postcardBtn" data-tip="send a postcard">📷</button>
+        <button id="cineBtn" data-tip="10-second timelapse film">🎬</button>
+        <button id="muteBtn" data-tip="sound on/off">🔊</button>
+        <button id="plotBtn" data-tip="claim the land where you stand">🏡</button>
+        <button id="settingsBtn" data-tip="settings">⚙</button>
+        <button id="authBtn" title="sign in with your Solana wallet">⬡ sign in</button>
+      </div>
+
+      <div id="buildwrap">
+        <div id="context" class="panel">
+          <span id="ctxLabel">Wall</span>
+          <span id="wallHeightGroup" style="display:flex;align-items:center;gap:8px">
+            <div class="sep" style="width:1px;height:16px;background:rgba(74,59,42,0.2)"></div>
+            <span>height</span>
+            <input id="wallH" type="range" min="1.4" max="3.2" step="0.05" value="2.2" />
+          </span>
+          <span id="tintGroup" style="display:none;align-items:center;gap:5px"></span>
+        </div>
+        <div id="tray" class="panel"></div>
+        <div id="bar" class="panel">
+          <button data-tool="orbit" class="active" data-tip="move · select (1)">✦ move</button>
+          <button data-tool="erase" data-tip="erase walls (3)">erase</button>
+          <button data-tool="arch" data-tip="arch doorway (4)">arch</button>
+          <div class="sep"></div>
+          <button id="undoBtn" disabled data-tip="undo (⌘Z)">↶</button>
+          <button id="redoBtn" disabled data-tip="redo (⌘⇧Z)">↷</button>
+          <button id="deleteBtn" disabled data-tip="remove selected (⌫)">🗑</button>
+          <div class="sep"></div>
+          <span class="cats" style="display:flex;gap:4px">
+            <button data-cat="terrain">Terrain</button>
+            <button data-cat="walls" class="active">Walls</button>
+            <button data-cat="paths">Paths</button>
+            <button data-cat="fields">Fields</button>
+            <button data-cat="buildings">Buildings</button>
+            <button data-cat="nature">Nature</button>
+            <button data-cat="props">Props</button>
+          </span>
+        </div>
+      </div>
+
+      <div id="loading">kindling the glade…</div>
+    </div>
+    <div id="vignette"></div>
+    <div id="hints">drag to build · double-click to look · R rotates · WASD walks · Enter chats</div>
+  </body>
+</html>
