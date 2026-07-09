@@ -114,6 +114,39 @@
       }
       #settingspanel .set-note { font-size: 10px; font-style: italic; opacity: 0.6; }
 
+      /* photo mode popover */
+      #photopanel {
+        position: fixed; top: 64px; right: 18px; z-index: 45; pointer-events: auto;
+        display: none; flex-direction: column; gap: 10px; padding: 14px 16px; font-size: 12px; width: 208px;
+      }
+      #photopanel.open { display: flex; }
+      #photopanel h4 {
+        margin: 0 0 2px; font-size: 11px; font-weight: 600; color: #6a5a45; letter-spacing: 0.05em;
+        text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;
+      }
+      #pmClose { cursor: pointer; border: none; background: transparent; color: #9a8a72; font-size: 13px; padding: 0 2px; }
+      #pmClose:hover { color: #6a5a45; }
+      #photopanel .pm-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      #photopanel .pm-presets button {
+        padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(74, 59, 42, 0.16);
+        background: rgba(255, 255, 255, 0.5); color: #4a3b2a; cursor: pointer; font-size: 11px;
+      }
+      #photopanel .pm-presets button:hover { background: rgba(181, 113, 63, 0.16); border-color: rgba(181, 113, 63, 0.4); }
+      #photopanel .pm-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      #photopanel .pm-cyc { display: flex; align-items: center; gap: 6px; }
+      #photopanel .pm-cyc button {
+        width: 22px; height: 22px; border-radius: 999px; border: 1px solid rgba(74, 59, 42, 0.2);
+        background: rgba(255, 255, 255, 0.55); cursor: pointer; color: #4a3b2a; line-height: 1;
+      }
+      #photopanel .pm-cyc button:hover { background: rgba(181, 113, 63, 0.16); }
+      #photopanel #pmFilter { min-width: 76px; text-align: center; font-style: italic; color: #4a3b2a; }
+      #photopanel input[type="range"] { width: 100%; accent-color: #b5713f; }
+      #photopanel #pmShot {
+        margin-top: 2px; padding: 8px; border-radius: 12px; border: none;
+        background: #b5713f; color: #fff7ea; cursor: pointer; font-size: 12px; font-weight: 600;
+      }
+      #photopanel #pmShot:hover { background: #c67e46; }
+
       /* first-visit guidance */
       #onboard {
         position: fixed; left: 50%; bottom: 148px; transform: translateX(-50%); z-index: 35;
@@ -162,6 +195,11 @@
       #topbar button.active { background: rgba(181, 113, 63, 0.18); border-color: rgba(181, 113, 63, 0.45); }
       #topbar input[type="range"] { width: 96px; accent-color: #b5713f; }
       #topbar .sep { width: 1px; height: 16px; background: rgba(74, 59, 42, 0.2); }
+      #timeDial { position: relative; width: 30px; height: 30px; cursor: grab; pointer-events: auto; flex: none; }
+      #timeDial:active { cursor: grabbing; }
+      #timeDial svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      #timeDialHandle { position: absolute; inset: 0; transform-origin: 50% 50%; pointer-events: none; }
+      #timeDialHandle i { position: absolute; top: 1px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #b5713f; box-shadow: 0 0 5px rgba(181, 113, 63, 0.7); }
       #netBadge { margin-left: 10px; font-size: 12px; color: #9a8a72; white-space: nowrap; }
       #netBadge.on { color: #5e8a52; }
       #authBtn { white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
@@ -439,7 +477,7 @@
       }
       #loading.done { opacity: 0; pointer-events: none; }
     </style>
-    <script type="module" crossorigin src="./assets/index-Cw5QFXIO.js"></script>
+    <script type="module" crossorigin src="./assets/index-Cv73DRW_.js"></script>
   </head>
   <body>
     <canvas id="scene"></canvas>
@@ -450,6 +488,7 @@
         <span>☀</span>
         <input id="time" type="range" min="0" max="1" step="0.01" value="0.45" />
         <button id="flowBtn" data-tip="let time flow">⏵</button>
+        <div id="timeDial" data-tip="drag the sun round the day"><svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.5" fill="none" stroke="rgba(74,59,42,0.25)" stroke-width="2" /></svg><div id="timeDialHandle"><i></i></div></div>
         <button id="gildBtn" data-tip="the Gilded Hour — a Lord's sky">👑</button>
         <div class="sep"></div>
         <div class="seasons">
@@ -462,6 +501,7 @@
         <button id="balanceChip" data-tip="glimmers · daily quests">✨ –</button>
         <button id="marketBtn" data-tip="the keeper market">🛍</button>
         <button id="postcardBtn" data-tip="send a postcard">📷</button>
+        <button id="photoBtn" data-tip="photo mode">🎞</button>
         <button id="cineBtn" data-tip="10-second timelapse film">🎬</button>
         <button id="muteBtn" data-tip="sound on/off">🔊</button>
         <button id="plotBtn" data-tip="claim the land where you stand">🏡</button>
@@ -542,10 +582,27 @@
         </div>
         <button class="pm-item" data-pm="continue">Continue</button>
         <button class="pm-item" data-pm="market">Market</button>
+        <button class="pm-item" data-pm="photo">Photo Mode</button>
         <button class="pm-item" data-pm="postcard">Postcard</button>
         <button class="pm-item" data-pm="settings">Settings</button>
         <button class="pm-item" data-pm="exit">Leave the Glade</button>
       </div>
     </div>
+
+    <div id="photopanel" class="panel">
+      <h4>Photo Mode <button id="pmClose" data-tip="close (Esc)">✕</button></h4>
+      <div class="pm-presets">
+        <button data-preset="orbit">Orbit</button>
+        <button data-preset="hero">Hero</button>
+        <button data-preset="topdown">Top-down</button>
+        <button data-preset="portrait">Portrait</button>
+      </div>
+      <div class="pm-row"><span>Filter</span><span class="pm-cyc"><button id="pmPrev" data-tip="previous look">‹</button><span id="pmFilter">Natural</span><button id="pmNext" data-tip="next look">›</button></span></div>
+      <label class="pm-row"><span>Depth of field</span><input type="checkbox" id="pmDof" checked /></label>
+      <div class="pm-row"><span>Aperture</span></div>
+      <input type="range" id="pmAperture" min="0.001" max="0.02" step="0.001" value="0.006" />
+      <button id="pmShot">📸 Capture</button>
+    </div>
+
   </body>
 </html>
