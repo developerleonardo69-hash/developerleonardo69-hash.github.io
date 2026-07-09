@@ -572,6 +572,22 @@
       </div>
 
       <div id="loading">kindling the glade…</div>
+      <script>
+        // Self-heal a stale cached page. GitHub Pages caches this HTML for 10 min, so a
+        // reload just after a deploy can reference a bundle that changed since; if the app
+        // module never runs, __ef is never set and the spinner would hang forever. After
+        // 25s with no boot, turn the loader into a one-tap cache-busting refresh. (__ef is
+        // set the instant the module finishes evaluating — well before models finish
+        // loading — so a merely slow connection won't trip this.)
+        setTimeout(function () {
+          if (window.__ef || location.search.indexOf('_cb=') !== -1) return;
+          var l = document.getElementById('loading');
+          if (!l) return;
+          l.textContent = 'still loading — tap to refresh';
+          l.style.cursor = 'pointer';
+          l.onclick = function () { location.replace(location.pathname + '?_cb=' + Date.now()); };
+        }, 25000);
+      </script>
     </div>
     <div id="vignette"></div>
     <div id="hints">drag to build · double-click to look · R rotates · WASD walks · Enter chats</div>
