@@ -85,6 +85,11 @@
 
       /* clean-shot mode (H) — the world, nothing else */
       body.hide-ui #ui, body.hide-ui #chat, body.hide-ui #hints { display: none !important; }
+      /* …except the way back: a whisper of a button, only while hidden */
+      #showUiBtn { display: none; position: fixed; right: 14px; bottom: 12px; z-index: 70;
+        border: 1px solid rgba(74,59,42,0.18); background: rgba(255,250,238,0.55); backdrop-filter: blur(6px);
+        border-radius: 999px; padding: 4px 12px; font: italic 11px Georgia, serif; color: rgba(74,59,42,0.75); cursor: pointer; }
+      body.hide-ui #showUiBtn { display: block; }
 
       /* quests popover (✨ chip) */
       #questpanel {
@@ -188,6 +193,13 @@
         display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: 12px;
       }
       #topbar .seasons { display: flex; gap: 3px; }
+      /* the season popover — a small shelf hanging under the sky pill */
+      #seasonpanel {
+        position: absolute; top: calc(100% + 8px); right: 54px; display: none;
+        align-items: center; gap: 6px; padding: 6px 10px; z-index: 46;
+      }
+      #seasonpanel.open { display: flex; }
+      #seasonChip { font-size: 15px; }
       #topbar button {
         cursor: pointer; font: inherit; font-size: 12px; color: #4a3b2a;
         background: transparent; border: 1px solid transparent; border-radius: 999px; padding: 4px 9px;
@@ -477,7 +489,7 @@
       }
       #loading.done { opacity: 0; pointer-events: none; }
     </style>
-    <script type="module" crossorigin src="./assets/index-Cgl_jwz_.js"></script>
+    <script type="module" crossorigin src="./assets/index-vzM6JGdY.js"></script>
   </head>
   <body>
     <canvas id="scene"></canvas>
@@ -485,29 +497,34 @@
       <div id="title">EMBERFELL<small>PHASE 0 · BUILD</small></div>
 
       <div id="topbar" class="panel">
-        <span>☀</span>
-        <input id="time" type="range" min="0" max="1" step="0.01" value="0.45" />
-        <button id="flowBtn" data-tip="let time flow">⏵</button>
+        <!-- THE SKY — the sun dial is the time control; the slider survives hidden as the state carrier -->
+        <input id="time" type="range" min="0" max="1" step="0.01" value="0.45" style="display:none" />
         <div id="timeDial" data-tip="drag the sun round the day"><svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.5" fill="none" stroke="rgba(74,59,42,0.25)" stroke-width="2" /></svg><div id="timeDialHandle"><i></i></div></div>
-        <button id="gildBtn" data-tip="the Gilded Hour — a Lord's sky">👑</button>
-        <div class="sep"></div>
-        <div class="seasons">
-          <button data-season="spring" class="active">spring</button>
-          <button data-season="summer">summer</button>
-          <button data-season="fall">fall</button>
-          <button data-season="winter">winter</button>
+        <button id="flowBtn" data-tip="let time flow">⏵</button>
+        <button id="seasonChip" data-tip="season">🌸</button>
+        <div id="seasonpanel" class="panel">
+          <div class="seasons">
+            <button data-season="spring" class="active">spring</button>
+            <button data-season="summer">summer</button>
+            <button data-season="fall">fall</button>
+            <button data-season="winter">winter</button>
+          </div>
+          <button id="gildBtn" data-tip="the Gilded Hour — a Lord's sky">👑</button>
         </div>
         <div class="sep"></div>
         <button id="balanceChip" data-tip="glimmers · daily quests">✨ –</button>
-        <button id="marketBtn" data-tip="the keeper market">🛍</button>
-        <button id="postcardBtn" data-tip="send a postcard">📷</button>
-        <button id="photoBtn" data-tip="photo mode">🎞</button>
-        <button id="cineBtn" data-tip="10-second timelapse film">🎬</button>
-        <button id="muteBtn" data-tip="sound on/off">🔊</button>
-        <button id="plotBtn" data-tip="claim the land where you stand">🏡</button>
-        <button id="settingsBtn" data-tip="settings">⚙</button>
-        <button id="pauseBtn" data-tip="menu (esc)">☰</button>
-        <button id="authBtn" title="sign in with your Solana wallet">⬡ sign in</button>
+        <button id="pauseBtn" data-tip="the satchel — everything else (esc)">☰</button>
+        <!-- retired from the bar, kept alive for the satchel + camera tray to press -->
+        <div id="hiddenActions" style="display:none">
+          <button id="marketBtn">🛍</button>
+          <button id="postcardBtn">📷</button>
+          <button id="photoBtn">🎞</button>
+          <button id="cineBtn">🎬</button>
+          <button id="muteBtn">🔊</button>
+          <button id="plotBtn">🏡</button>
+          <button id="settingsBtn">⚙</button>
+          <button id="authBtn" title="sign in with your Solana wallet">⬡ sign in</button>
+        </div>
       </div>
 
       <div id="radial"></div>
@@ -528,46 +545,42 @@
         </div>
         <div id="tray" class="panel"></div>
         <div id="bar">
-          <button class="gtile active" style="--tile:#8f9c85" data-tool="orbit" data-tip="move · select (1)">
-            <svg viewBox="0 0 40 40"><path d="M20 6 C21.5 13.5 23 15.6 31 19.6 C23 22.2 21.5 24.6 20 33 C18.5 24.6 17 22.2 9 19.6 C17 15.6 18.5 13.5 20 6 Z" fill="rgba(246,236,214,.4)" stroke="#f6ecd6" stroke-width="2.2" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="gtile" style="--tile:#cf8e68" data-tool="erase" data-tip="erase walls (3)">
-            <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="15" y="7" width="15" height="10.5" rx="2.6" transform="rotate(24 22 12)" fill="rgba(246,236,214,.3)"/><path d="M9 27 q7 -2.5 14 0"/><path d="M7 32.5 q9 -3 17.5 0"/></g></svg>
-          </button>
-          <button class="gtile" style="--tile:#c1a262" data-tool="arch" data-tip="arch doorway (4)">
-            <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M11.5 32 V20.5 Q11.5 11.5 20 11.5 Q28.5 11.5 28.5 20.5 V32" fill="rgba(246,236,214,.18)"/><path d="M7 33 q13 -2.2 26 0"/></g></svg>
-          </button>
           <span class="gminis">
             <button class="gmini" id="undoBtn" disabled data-tip="undo (⌘Z)">↶</button>
             <button class="gmini" id="redoBtn" disabled data-tip="redo (⌘⇧Z)">↷</button>
-            <button class="gmini" id="deleteBtn" disabled data-tip="remove selected (⌫)">🗑</button>
           </span>
+          <button class="gtile active" style="--tile:#8f9c85" data-tool="orbit" data-tip="move · select (1)">
+            <svg viewBox="0 0 40 40"><path d="M20 6 C21.5 13.5 23 15.6 31 19.6 C23 22.2 21.5 24.6 20 33 C18.5 24.6 17 22.2 9 19.6 C17 15.6 18.5 13.5 20 6 Z" fill="rgba(246,236,214,.4)" stroke="#f6ecd6" stroke-width="2.2" stroke-linejoin="round"/></svg>
+          </button>
           <span class="cats">
-            <button class="gtile" style="--tile:#d6c193" data-cat="terrain" data-tip="terrain — sculpt &amp; paint">
+            <button class="gtile" style="--tile:#d6c193" data-cat="terrain" data-tip="terrain — sculpt &amp; paint (2)">
               <svg viewBox="0 0 40 40"><g stroke="#4a584d" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 31 q5.5 -9 11 -3.5 q4.5 -10.5 17 3.5" fill="rgba(74,88,77,.15)"/><path d="M20 17 V7.5"/><path d="M15.5 12.2 L20 7 l4.5 5.2"/></g></svg>
             </button>
-            <button class="gtile active" style="--tile:#b98a5c" data-cat="walls" data-tip="walls">
+            <button class="gtile active" style="--tile:#b98a5c" data-cat="walls" data-tip="walls (3)">
               <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.1" fill="none" stroke-linecap="round" transform="rotate(-2 20 20)"><path d="M8.5 27.5 q11.5 1 23 0 M8 20.5 q12 -1 24 0 M8.5 13.5 q11.5 1 23 0"/><path d="M8.5 13.5 v14 M31.5 13.5 v14 M16 14 v6.5 M24 13.2 v7.3 M12 21 v6.5 M20 20.4 v7.1 M28 20.8 v6.7"/></g></svg>
             </button>
-            <button class="gtile" style="--tile:#c97a54" data-cat="paths" data-tip="paths">
+            <button class="gtile" style="--tile:#c97a54" data-cat="paths" data-tip="paths, meadows &amp; wheat (4)">
               <svg viewBox="0 0 40 40"><path d="M11.5 33 C 20 28, 10.5 20, 19 15 C 25 11.5, 27 10, 30 6.5" fill="none" stroke="#f6ecd6" stroke-width="2.7" stroke-linecap="round" stroke-dasharray="6 4.6"/></svg>
             </button>
-            <button class="gtile" style="--tile:#a8a457" data-cat="fields" data-tip="fields — meadow &amp; wheat">
-              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.1" fill="rgba(246,236,214,.3)" stroke-linecap="round" stroke-linejoin="round"><path d="M20 33.5 Q19.4 22 20 11" fill="none"/><path d="M20 15 q-6.2 -2 -7.2 -8.2 q6.2 1.2 7.2 8.2 Z"/><path d="M20 15 q6.2 -2 7.2 -8.2 q-6.2 1.2 -7.2 8.2 Z"/><path d="M20 22.5 q-5.6 -1.6 -7 -7.2 q6 1.1 7 7.2 Z"/><path d="M20 22.5 q5.6 -1.6 7 -7.2 q-6 1.1 -7 7.2 Z"/></g></svg>
-            </button>
-            <button class="gtile" style="--tile:#b58a5c" data-cat="stairs" data-tip="stairs &amp; bridges">
+            <button class="gtile" style="--tile:#b58a5c" data-cat="stairs" data-tip="stairs &amp; bridges (5)">
               <svg viewBox="0 0 40 40"><path d="M7 32 h7 v-7 h7 v-7 h7 v-7 h5" fill="none" stroke="#f6ecd6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <button class="gtile" style="--tile:#c96f45" data-cat="buildings" data-tip="buildings">
+            <button class="gtile" style="--tile:#c96f45" data-cat="buildings" data-tip="buildings (6)">
               <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.2" fill="rgba(246,236,214,.24)" stroke-linejoin="round" stroke-linecap="round"><path d="M8 32.5 V22 l6 -4.2 6 4.2 V32.5 Z"/><path d="M20 32.5 V15 l5.2 -7.5 5.2 7.5 V32.5"/><path d="M5.5 33 q14.5 1.4 29 0" fill="none"/><circle cx="25.2" cy="19" r="1.7" fill="#f6ecd6" stroke="none"/></g></svg>
             </button>
-            <button class="gtile" style="--tile:#7d9c5a" data-cat="nature" data-tip="nature — trees &amp; bushes">
+            <button class="gtile" style="--tile:#7d9c5a" data-cat="nature" data-tip="nature — trees &amp; bushes (7)">
               <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 33.5 v-7" fill="none"/><path d="M20 27 C 11.5 27 8.2 21 12.2 16.2 C 9.4 10.5 15.8 5.4 20 7.2 C 25.8 4.4 31.6 10 28 15.4 C 32.6 20.4 28 27 20 27 Z" fill="rgba(246,236,214,.28)"/></g></svg>
             </button>
-            <button class="gtile" style="--tile:#6f8a94" data-cat="props" data-tip="props &amp; trinkets">
+            <button class="gtile" style="--tile:#6f8a94" data-cat="props" data-tip="props &amp; trinkets (8)">
               <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.2" fill="none" stroke-linecap="round"><circle cx="20" cy="20" r="12.6"/><circle cx="20" cy="20" r="2.7" fill="rgba(246,236,214,.55)"/><path d="M20 7.4 v25.2 M7.4 20 h25.2 M11.1 11.1 l17.8 17.8 M28.9 11.1 L11.1 28.9"/></g></svg>
             </button>
+            <button class="gtile" style="--tile:#9b8db0" data-cat="camera" data-tip="camera — postcards &amp; films (9)">
+              <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="13" width="26" height="18" rx="3.4" fill="rgba(246,236,214,.18)"/><path d="M14.5 13 l2.6 -4 h5.8 l2.6 4"/><circle cx="20" cy="22" r="5.4"/><circle cx="20" cy="22" r="2" fill="rgba(246,236,214,.5)"/><circle cx="29.2" cy="17.4" r="1.1" fill="#f6ecd6" stroke="none"/></g></svg>
+            </button>
           </span>
+          <button class="gtile" style="--tile:#cf8e68" data-tool="erase" data-tip="erase anything (0)">
+            <svg viewBox="0 0 40 40"><g stroke="#f6ecd6" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="15" y="7" width="15" height="10.5" rx="2.6" transform="rotate(24 22 12)" fill="rgba(246,236,214,.3)"/><path d="M9 27 q7 -2.5 14 0"/><path d="M7 32.5 q9 -3 17.5 0"/></g></svg>
+          </button>
         </div>
       </div>
 
@@ -590,7 +603,9 @@
       </script>
     </div>
     <div id="vignette"></div>
-    <div id="hints">drag to build · WASD walks · V first-person · R rotates · Enter chats</div>
+    <div id="hints">drag to build · 1 selects · WASD walks · R rotates · Q/E spin · Enter chats</div>
+    <button id="showUiBtn">show the UI (H)</button>
+    <button id="fpBtn" data-tip="walk in first-person (V)" style="position:fixed; left:14px; bottom:130px; z-index:7; pointer-events:auto; width:34px; height:34px; border-radius:50%; border:1px solid rgba(74,59,42,0.18); background:rgba(255,250,238,0.8); backdrop-filter:blur(8px); font-size:16px; cursor:pointer; color:#4a3b2a;">👁</button>
     <div id="pausemenu">
       <div class="pm-inner">
         <div class="pm-logo">Emberfell
@@ -598,9 +613,11 @@
         </div>
         <button class="pm-item" data-pm="continue">Continue</button>
         <button class="pm-item" data-pm="market">Market</button>
-        <button class="pm-item" data-pm="photo">Photo Mode</button>
-        <button class="pm-item" data-pm="postcard">Postcard</button>
+        <button class="pm-item" data-pm="purse">Purse &amp; Quests</button>
+        <button class="pm-item" data-pm="plot">My Plot — claim / unclaim</button>
+        <button class="pm-item" data-pm="sound">Sound on · off</button>
         <button class="pm-item" data-pm="settings">Settings</button>
+        <button class="pm-item" data-pm="auth">Sign In</button>
         <button class="pm-item" data-pm="exit">Leave the Glade</button>
       </div>
     </div>
