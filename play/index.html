@@ -235,6 +235,15 @@
         border: 0; background: rgba(250, 244, 230, 0.88); border-radius: 6px;
         padding: 3px 5px; cursor: pointer; font-size: 14px; line-height: 1;
       }
+      /* the emotes hide behind one 😊 chip — tap to fan them out (UI 2.0) */
+      #chat .emotes button.opt { display: none; }
+      #chat .emotes.open button.opt { display: block; animation: epop 0.18s cubic-bezier(0.2, 1.3, 0.5, 1) both; }
+      #chat .emotes.open button.opt:nth-child(3) { animation-delay: 0.02s; }
+      #chat .emotes.open button.opt:nth-child(4) { animation-delay: 0.04s; }
+      #chat .emotes.open button.opt:nth-child(5) { animation-delay: 0.06s; }
+      #chat .emotes.open button.opt:nth-child(6) { animation-delay: 0.08s; }
+      #chat .emotes.open .etoggle { background: rgba(216, 181, 69, 0.35); }
+      @keyframes epop { from { opacity: 0; transform: scale(0.4); } }
       #chat input {
         flex: 1; min-width: 0; border: 0; border-radius: 8px; padding: 6px 9px;
         background: rgba(250, 244, 230, 0.92); color: #4a3b2a; font: inherit; font-size: 12px; outline: none;
@@ -262,7 +271,8 @@
       #tintGroup .troyal.tlocked { opacity: 0.45; filter: saturate(0.6); }
 
       /* the on-object radial menu — a curved fan of nodes beside the building */
-      #radial { position: absolute; inset: 0; pointer-events: none; z-index: 6; display: none; }
+      /* z 32: above chat (30) and the 👁 button (7) so tooltips stay readable, below the satchel (40) */
+      #radial { position: absolute; inset: 0; pointer-events: none; z-index: 32; display: none; }
       #radial.show { display: block; }
       .rnode {
         position: absolute; transform: translate(-50%, -50%);
@@ -287,6 +297,15 @@
         box-shadow: 0 2px 6px rgba(46, 38, 24, 0.25);
       }
       .rnode.rdel { background: linear-gradient(160deg, rgba(255, 252, 240, 0.4), rgba(40, 32, 20, 0.12)), #e8b3a0; border-color: #c96f45; }
+      /* radial tips carry whole sentences — let them wrap. The chip's hover scale(1.24)
+         also scales this ::after, so 9px/164px paint at ~11px/~200px like every other tip. */
+      .rnode:hover::after { white-space: normal; width: max-content; max-width: 164px; font-size: 9px; text-align: center; line-height: 1.35; z-index: 60; }
+      .rnode:active::after { display: none; } /* pressing a chip would jerk the tip through :active's scale */
+      /* near a screen edge the tip re-anchors so it never runs off screen */
+      .rnode.tipdown:hover::after { bottom: auto; top: calc(100% + 8px); }
+      .rnode.tipleft:hover::after { left: -6px; transform: none; animation-name: tipInEdge; }
+      .rnode.tipright:hover::after { left: auto; right: -6px; transform: none; animation-name: tipInEdge; }
+      @keyframes tipInEdge { from { opacity: 0; transform: translateY(3px); } }
       #gildBtn.active { background: rgba(216, 181, 69, 0.25); border-color: rgba(216, 181, 69, 0.7); }
 
       #tray {
@@ -489,7 +508,7 @@
       }
       #loading.done { opacity: 0; pointer-events: none; }
     </style>
-    <script type="module" crossorigin src="./assets/index-vzM6JGdY.js"></script>
+    <script type="module" crossorigin src="./assets/index-IFHbUZM4.js"></script>
   </head>
   <body>
     <canvas id="scene"></canvas>
